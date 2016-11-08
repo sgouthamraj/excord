@@ -1,2 +1,6 @@
 /target/
 /logs/
+.classpath
+.project
+.DS_Store
+.settings/*
