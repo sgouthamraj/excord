@@ -1,6 +1,9 @@
 <#import "layouts/main-layout.ftl.html" as main> 
 <@main.page>
+<link href="css/bootstrap-tagsinput.css" rel="stylesheet">
 <script src="js/3p/autosize.min.js"></script>
+<script src="js/3p/bootstrap-tagsinput.js"></script>
+<script src="js/3p/typeahead.js"></script>
 <script src="js/custom/testcase_form.js"></script>
 <div class="container-fluid">
     <form method="post" action="/testcase_save" role="form" class="form-horizontal">
@@ -215,7 +218,7 @@
                 </div>
                 <div class="form-group">
                     <label for="ttags">Tags</label>
-                    <input type="text" name="ttags" class="form-control" id="ttags" maxlength="45" value="<#if ttags??>${ttags}</#if>"/>
+                    <input type="text" name="ttags" class="form-control" id="ttags" maxlength="200" value="<#if ttags??>${ttags}</#if>"/>
                 </div>
             </div>
         </div>

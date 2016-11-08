@@ -12,5 +12,4 @@ public interface TagRepository extends CrudRepository<EcTag, Long> {
 	public boolean checkTagExists(@Param("tag") String tag);
 	
 	public EcTag findByTag(String tag);
-	
 }

@@ -36,5 +36,13 @@ $(document).ready(function () {
         }
 
     });
+    
+    $("#ttags").tagsinput({
+      typeahead: {
+        source: function(query) {
+        	return $.get("/tags");
+        }
+      }
+    });
 
 }); 
