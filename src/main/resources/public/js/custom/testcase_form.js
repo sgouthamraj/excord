@@ -37,12 +37,16 @@ $(document).ready(function () {
 
     });
     
-    $("#ttags").tagsinput({
-      typeahead: {
-        source: function(query) {
-        	return $.get("/tags");
-        }
-      }
+	var ms = $('#ttags-div').magicSuggest({
+      value: $("#ttags").val().split(",")
+	});
+	
+	$(ms).on('selectionchange', function(){
+  		$("#ttags").val(this.getValue().join(","));
     });
-
+	
+    $.get("/tags").then(function(list){
+    	ms.setData(list);
+    });
+    
 }); 
