@@ -51,6 +51,8 @@ import com.deem.excord.repository.TestResultRepository;
 import com.deem.excord.repository.TestStepRepository;
 import com.deem.excord.repository.TestcaseRequirementRepository;
 import com.deem.excord.repository.TestcaseTagRepository;
+import com.deem.excord.repository.CustomSearchRepository;
+import com.deem.excord.repository.SearchRepository;
 import com.deem.excord.util.BizUtil;
 import com.deem.excord.util.Constants;
 import com.deem.excord.util.FlashMsgUtil;
@@ -87,6 +89,9 @@ public class TestCaseController {
     
     @Autowired
     TestcaseTagRepository tctagDao;
+    
+    @Autowired
+    SearchRepository searchDao;
 
     @Autowired
     HistoryUtil historyUtil;
@@ -97,10 +102,11 @@ public class TestCaseController {
     }
 
     @RequestMapping(value = {"/search"}, method = RequestMethod.POST)
-    public String searchKey(HttpSession session, Model model, @RequestParam(value = "searchKey", required = true) String searchKey) {
-        LOGGER.info("Search key: {}", searchKey);
-        List<EcTestcase> testCaseLst = tcDao.findByNameContainingOrDescriptionContainingOrderByIdDesc(searchKey, searchKey);
-        model.addAttribute("searchKey", searchKey);
+    public String searchKey(HttpSession session, Model model, @RequestParam(value = "searchKey", required = true) String query) {
+        LOGGER.info("Search key: {}", query);
+        List<EcTestcase> testCaseLst = new ArrayList<>();
+        testCaseLst.addAll(searchDao.search(query));
+        model.addAttribute("searchKey", query);
         model.addAttribute("testCaseLst", testCaseLst);
         return "search";
     }
@@ -200,7 +206,7 @@ public class TestCaseController {
             //Delete all existing steps of testcase.
             tsDao.deleteTeststepByTestcaseId(tid);
             // Delete all the existing tags of testcase
-            tctagDao.deleteByTestcaseId(tcObj);
+            tctagDao.deleteByTestcase(tcObj);
             //Mark all test runs as not run.
             updateTestcaseAsNotRun(tcObj);
         } else {

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -12,7 +13,12 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import org.hibernate.search.annotations.Indexed;
+
+import org.hibernate.search.annotations.IndexedEmbedded;
+
 @Entity
+@Indexed
 @Table(name = "ec_testcase_tag_mapping")
 public class EcTestcaseTagMapping implements Serializable {
 
@@ -25,12 +31,13 @@ public class EcTestcaseTagMapping implements Serializable {
 	private Long id;
 
     @JoinColumn(name = "tag_id", referencedColumnName = "id")
-    @ManyToOne
-    private EcTag tagId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @IndexedEmbedded
+    private EcTag tag;
     
     @JoinColumn(name = "testcase_id", referencedColumnName = "id")
-    @ManyToOne
-    private EcTestcase testcaseId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private EcTestcase testcase;
 
 	public EcTestcaseTagMapping() {
 	}
@@ -48,19 +55,19 @@ public class EcTestcaseTagMapping implements Serializable {
 	}
 
     public EcTag getTagId() {
-		return tagId;
+		return tag;
 	}
 
 	public void setTagId(EcTag tagId) {
-		this.tagId = tagId;
+		this.tag = tagId;
 	}
 
 	public EcTestcase getTestcaseId() {
-		return testcaseId;
+		return testcase;
 	}
 
 	public void setTestcaseId(EcTestcase testcaseId) {
-		this.testcaseId = testcaseId;
+		this.testcase = testcaseId;
 	}
 
 	@Override
