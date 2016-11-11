@@ -5,6 +5,8 @@ import javax.persistence.PersistenceContext;
 
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
@@ -14,6 +16,8 @@ public class BuildSearchIndex implements ApplicationListener<ApplicationReadyEve
 
 	@PersistenceContext
 	private EntityManager entityManager;
+	
+    private static final Logger LOGGER = LoggerFactory.getLogger(BuildSearchIndex.class);
 
 	/**
 	 * Create an initial Lucene index for the data already present in the
@@ -25,7 +29,7 @@ public class BuildSearchIndex implements ApplicationListener<ApplicationReadyEve
 			FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager(entityManager);
 			fullTextEntityManager.createIndexer().startAndWait();
 		} catch (InterruptedException e) {
-			System.out.println("An error occurred trying to build the serach index: " + e.toString());
+			LOGGER.error("An error occurred trying to build the serach index: " + e.toString());
 		}
 		return;
 	}
