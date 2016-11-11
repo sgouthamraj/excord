@@ -7,8 +7,11 @@ import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import com.deem.excord.domain.EcTag;
 import com.deem.excord.domain.EcTestcase;
@@ -18,6 +21,8 @@ import com.deem.excord.domain.EcTestfolder;
 @Repository
 public class SearchRepository {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchRepository.class);
+    
 	@Autowired
 	SpringSearchRepository springSearchDao;
 
@@ -39,27 +44,35 @@ public class SearchRepository {
 		return executePostFixQuery(postfixQuery);
 	}
 
-	public List<String> tokenizeQuery(String query) {
+	private List<String> tokenizeQuery(String query) {
 		char[] charArray = query.toCharArray();
 		List<String> tokenizeQuery = new ArrayList<>();
 		StringBuilder sb = new StringBuilder();
 		for(char chr : charArray) {
 			if(chr == '(' || chr == ')' || chr == '&' || chr =='|' ) {
-				tokenizeQuery.add(sb.toString().trim());
+				addTokenToList(tokenizeQuery, sb.toString().trim());
 				tokenizeQuery.add("" + chr);
 				sb = new StringBuilder();
 			} else {
 				sb.append(chr);
 			}
 		}
-		tokenizeQuery.add(sb.toString().trim());
+		addTokenToList(tokenizeQuery, sb.toString().trim());
+		LOGGER.debug("Tokenized Query : " + tokenizeQuery.toString());
 		return tokenizeQuery;
 	}
+	
+	private void addTokenToList(List<String> list, String text) {
+		if(!StringUtils.isEmpty(text)) {
+			list.add(text);
+		}
+	}
 
-	public List<String> createPostfixQuery(List<String> query) {
+	private List<String> createPostfixQuery(List<String> query) {
 		Map<String, Integer> precision = new HashMap<>();
 		List<String> postfixQuery = new ArrayList<>();
 		Stack<String> stack = new Stack<>();
+		precision.put(")", 1);
 		precision.put("(", 1);
 		precision.put("&", 2);
 		precision.put("|", 3);
@@ -84,11 +97,12 @@ public class SearchRepository {
 		while(!stack.isEmpty()) {
 			postfixQuery.add(stack.pop());
 		}
+		LOGGER.debug("Postfix Query : " + postfixQuery.toString());
 		return postfixQuery;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<EcTestcase> executePostFixQuery(List<String> postfixQuery) {
+	private List<EcTestcase> executePostFixQuery(List<String> postfixQuery) {
 		Stack<List<EcTestcase>> stack = new Stack<>();
 		for(String item : postfixQuery) {
 			if(!(item.equals("&") || item.equals("|"))) {
@@ -102,10 +116,11 @@ public class SearchRepository {
 			}
 		}
 		List<EcTestcase> returnVal = stack.pop();
+		LOGGER.debug("Summary of results : " + returnVal.toString());
 		return returnVal;
 	}
 
-	public List<EcTestcase> executeSearch(String query) {
+	private List<EcTestcase> executeSearch(String query) {
 		List<EcTestcase> result = new ArrayList<>();
 		if (query.contains(":")) {
 			int index = query.indexOf(":");
@@ -120,10 +135,12 @@ public class SearchRepository {
 			}
 			result.addAll(customSearchDao.searchQuery(query));
 		}
+		LOGGER.debug("Sub-query results : " + result.toString());
 		return result;
 	}
 
-	public List<EcTestcase> executeSearch(String key, String searchFor) {
+	private List<EcTestcase> executeSearch(String key, String searchFor) {
+		LOGGER.debug("Running query on : " + key + " Searching for : " + searchFor);
 		List<EcTestcase> result = new ArrayList<>();
 		switch (key) {
 		case "name":
