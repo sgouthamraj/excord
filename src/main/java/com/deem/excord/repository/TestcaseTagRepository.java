@@ -11,11 +11,13 @@ import com.deem.excord.domain.EcTestcaseTagMapping;
 
 public interface TestcaseTagRepository extends CrudRepository<EcTestcaseTagMapping, Long> {
 
-	public EcTestcaseTagMapping findByTestcaseIdAndTagId(EcTestcase testcaseId, EcTag tagId);
+	public EcTestcaseTagMapping findByTestcaseAndTag(EcTestcase testcase, EcTag tag);
 	
-	public List<EcTestcaseTagMapping> findAllByTestcaseId(EcTestcase testcaseId);
+	public List<EcTestcaseTagMapping> findAllByTestcase(EcTestcase testcase);
+	
+	public List<EcTestcaseTagMapping> findAllByTag(EcTag tag);
 	
     @Transactional
-    public Integer deleteByTestcaseId(EcTestcase testcaseId);
+    public Integer deleteByTestcase(EcTestcase testcase);
 	
 }

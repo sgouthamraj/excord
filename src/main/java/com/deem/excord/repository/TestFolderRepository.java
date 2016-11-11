@@ -14,4 +14,6 @@ public interface TestFolderRepository extends CrudRepository<EcTestfolder, Long>
 
     @Query(value = "SELECT case when count(*) > 0 then 'true' else 'false' end FROM ec_testfolder where parent_id = :nodeId", nativeQuery = true)
     public Boolean checkIfHasChildren(@Param("nodeId") Long nodeId);
+    
+    public List<EcTestfolder> findAllByNameContaining(String name);
 }
