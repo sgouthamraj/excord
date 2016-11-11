@@ -37,8 +37,14 @@ $(document).ready(function () {
 
     });
     
+    var tags = $("#ttags").val();
+    var tagsList = [];
+    if(tags !== "") {
+    	tagsList = tags.split(",");
+    }
+    
 	var ms = $('#ttags-div').magicSuggest({
-      value: $("#ttags").val().split(",")
+      value: tagsList
 	});
 	
 	$(ms).on('selectionchange', function(){

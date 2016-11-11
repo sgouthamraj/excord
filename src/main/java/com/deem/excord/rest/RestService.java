@@ -1,10 +1,12 @@
 package com.deem.excord.rest;
 
+import com.deem.excord.domain.EcTag;
 import com.deem.excord.domain.EcTestcase;
 import com.deem.excord.domain.EcTestplan;
 import com.deem.excord.domain.EcTestplanTestcaseMapping;
 import com.deem.excord.domain.EcTestresult;
 import com.deem.excord.repository.RequirementRepository;
+import com.deem.excord.repository.TagRepository;
 import com.deem.excord.repository.TestCaseRepository;
 import com.deem.excord.repository.TestPlanRepository;
 import com.deem.excord.repository.TestPlanTestCaseRepository;
@@ -51,6 +53,9 @@ public class RestService {
 
     @Autowired
     RequirementRepository rDao;
+    
+    @Autowired
+    TagRepository tagDao;
 
     @Value("${test.env}")
     String testEnvArr;
@@ -362,5 +367,15 @@ public class RestService {
             pieData.add(element);
         }
         return pieData;
+    }
+
+    @RequestMapping(value = "/tags", method = RequestMethod.GET)
+    public List<String> tags() {
+        List<EcTag> ecTagList = (List<EcTag>) tagDao.findAll();
+        List<String> tags = new ArrayList<>();
+        for(EcTag ecTag : ecTagList) {
+        	tags.add(ecTag.getTag());
+        }
+        return tags;
     }
 }
