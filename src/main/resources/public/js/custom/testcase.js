@@ -150,6 +150,22 @@ $(document).ready(function () {
             bootbox.alert("Please check a testcase!");
         }
     });
+    
+    $.get("/testfolders").then(function(folder) {
+    	$("#test-folders-tree").jstree({
+    		"core": {
+    			"data": folder
+    		}
+    	});
+    	$("#test-folders-tree").on("ready.jstree", function() {
+    	    var instance = $('#test-folders-tree').jstree(true);
+    	    instance.deselect_all();
+    	    instance.select_node($("#nodeId").val());
+        	$("#test-folders-tree").on("select_node.jstree", function(node, selectedArray) {
+        		location.href = selectedArray.node.a_attr.href;
+        	});
+    	});
+    });
 
 });
 
