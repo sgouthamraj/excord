@@ -162,7 +162,9 @@ $(document).ready(function () {
     	    instance.deselect_all();
     	    instance.select_node($("#nodeId").val());
         	$("#test-folders-tree").on("select_node.jstree", function(node, selectedArray) {
-        		location.href = selectedArray.node.a_attr.href;
+        		if($("#nodeId").val() != selectedArray.node.id) {
+        			location.href = selectedArray.node.a_attr.href;
+        		}
         	});
     	});
     });
