@@ -1,5 +1,7 @@
 <#import "layouts/main-layout.ftl.html" as main> 
 <@main.page>
+<link href="css/jstree/style.css" rel="stylesheet">
+<script src="js/3p/jstree.min.js"></script>
 <script src="js/custom/testcase.js"></script>
 <div class="container-fluid">
     <form id="testcaseForm" method="post" action="/testcase" role="form" class="form-horizontal">
@@ -68,19 +70,7 @@
 
         <div class="row">
             <div class="col-md-4 well pre-scrollable scroll-pane" >
-                <div>
-                    <span class="fa fa-folder-open"></span>
-                    <a href="/testcase?nodeId=${parentNode.id?c}"><..></a>
-                    <br/>
-                    <#list nodeLst as node>
-                    &nbsp;
-                    <#if childNodeLst?seq_contains(node.id)>
-                    <span class="fa fa-folder">&nbsp;<a href="/testcase?nodeId=${node.id?c}">${node.name}</a></span>
-                    <#else>
-                    <span class="fa fa-folder-o">&nbsp;<a href="/testcase?nodeId=${node.id?c}">${node.name}</a></span>
-                    </#if>
-                    <br/>
-                    </#list>
+                <div id="test-folders-tree">
                 </div>
             </div>
             <div class="col-md-8 pre-scrollable scroll-pane">

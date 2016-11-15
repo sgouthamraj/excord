@@ -1,18 +1,5 @@
 package com.deem.excord.rest;
 
-import com.deem.excord.domain.EcTag;
-import com.deem.excord.domain.EcTestcase;
-import com.deem.excord.domain.EcTestplan;
-import com.deem.excord.domain.EcTestplanTestcaseMapping;
-import com.deem.excord.domain.EcTestresult;
-import com.deem.excord.repository.RequirementRepository;
-import com.deem.excord.repository.TagRepository;
-import com.deem.excord.repository.TestCaseRepository;
-import com.deem.excord.repository.TestPlanRepository;
-import com.deem.excord.repository.TestPlanTestCaseRepository;
-import com.deem.excord.repository.TestResultRepository;
-import com.deem.excord.util.BizUtil;
-import com.deem.excord.util.Constants;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,7 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+
 import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +24,22 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.deem.excord.domain.EcTag;
+import com.deem.excord.domain.EcTestcase;
+import com.deem.excord.domain.EcTestfolder;
+import com.deem.excord.domain.EcTestplan;
+import com.deem.excord.domain.EcTestplanTestcaseMapping;
+import com.deem.excord.domain.EcTestresult;
+import com.deem.excord.repository.RequirementRepository;
+import com.deem.excord.repository.TagRepository;
+import com.deem.excord.repository.TestCaseRepository;
+import com.deem.excord.repository.TestFolderRepository;
+import com.deem.excord.repository.TestPlanRepository;
+import com.deem.excord.repository.TestPlanTestCaseRepository;
+import com.deem.excord.repository.TestResultRepository;
+import com.deem.excord.util.BizUtil;
+import com.deem.excord.util.Constants;
 
 @RestController
 public class RestService {
@@ -56,6 +61,9 @@ public class RestService {
     
     @Autowired
     TagRepository tagDao;
+    
+    @Autowired
+    TestFolderRepository testFolderDao;
 
     @Value("${test.env}")
     String testEnvArr;
@@ -371,11 +379,34 @@ public class RestService {
 
     @RequestMapping(value = "/tags", method = RequestMethod.GET)
     public List<String> tags() {
-        List<EcTag> ecTagList = (List<EcTag>) tagDao.findAll();
+    	Iterable<EcTag> ecTagList = tagDao.findAll();
         List<String> tags = new ArrayList<>();
         for(EcTag ecTag : ecTagList) {
         	tags.add(ecTag.getTag());
         }
         return tags;
+    }
+
+    @RequestMapping(value = "/testfolders", method = RequestMethod.GET)
+    public List<NodeBean> testFolders() {
+    	Iterable<EcTestfolder> ecTestFolders = testFolderDao.findAll();
+        List<NodeBean> folders = new ArrayList<>();
+        for(EcTestfolder ecTestFolder : ecTestFolders) {
+        	NodeBean folder = new NodeBean();
+        	folder.id = String.valueOf(ecTestFolder.getId());
+        	folder.text = ecTestFolder.getName();
+        	EcTestfolder parentFolder = ecTestFolder.getParentId();
+        	String parent;
+        	if(parentFolder == null) {
+        		parent = "#";
+        	} else {
+        		parent = String.valueOf(parentFolder.getId());
+        	}
+        	folder.parent = parent;
+        	folder.a_attr = new HashMap<>();
+        	folder.a_attr.put("href", "/testcase?nodeId=" + ecTestFolder.getId());
+        	folders.add(folder);
+        }
+        return folders;
     }
 }

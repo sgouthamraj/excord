@@ -7,6 +7,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -22,6 +23,7 @@ import javax.validation.constraints.Size;
 public class EcTestfolder implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
@@ -38,14 +40,14 @@ public class EcTestfolder implements Serializable {
     @Column(name = "slug")
     private String slug;
     
-    @OneToMany(mappedBy = "parentId")
+    @OneToMany(mappedBy = "parentId", fetch = FetchType.LAZY)
     private List<EcTestfolder> ecTestfolderList;
     
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private EcTestfolder parentId;
     
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "folderId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "folderId", fetch = FetchType.LAZY)
     private List<EcTestcase> ecTestcaseList;
 
     public EcTestfolder() {
