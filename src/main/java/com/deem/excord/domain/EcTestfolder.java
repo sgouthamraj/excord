@@ -27,19 +27,24 @@ public class EcTestfolder implements Serializable {
     @Basic(optional = false)
     @Column(name = "id")
     private Long id;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 45)
     @Column(name = "name")
     private String name;
+    
     @Size(max = 45)
     @Column(name = "slug")
     private String slug;
+    
     @OneToMany(mappedBy = "parentId")
     private List<EcTestfolder> ecTestfolderList;
+    
     @JoinColumn(name = "parent_id", referencedColumnName = "id")
     @ManyToOne
     private EcTestfolder parentId;
+    
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "folderId")
     private List<EcTestcase> ecTestcaseList;
 

@@ -9,6 +9,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -21,85 +22,116 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
+
 @Entity
+@Indexed
 @Table(name = "ec_testcase")
 public class EcTestcase implements Serializable {
 
     private static final long serialVersionUID = 1L;
+   
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Basic(optional = false)
     @Column(name = "id")
     private Long id;
+    
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 90)
     @Column(name = "name")
+    @Field
     private String name;
+    
     @Basic(optional = false)
     @NotNull
     @Lob
     @Size(min = 1, max = 2147483647)
     @Column(name = "description")
+    @Field
     private String description;
+    
     @Basic(optional = false)
     @NotNull
     @Column(name = "enabled")
     private boolean enabled;
+    
     @Basic(optional = false)
     @NotNull
     @Column(name = "automated")
     private boolean automated;
+    
     @Size(max = 45)
     @Column(name = "added_version")
     private String addedVersion;
+   
     @Size(max = 45)
     @Column(name = "deprecated_version")
     private String deprecatedVersion;
+    
     @Size(max = 45)
     @Column(name = "bug_id")
     private String bugId;
+    
     @Size(max = 45)
     @Column(name = "language")
     private String language;
+    
     @Size(max = 90)
     @Column(name = "test_script_file")
     private String testScriptFile;
+    
     @Size(max = 45)
     @Column(name = "method_name")
     private String methodName;
+    
     @Basic(optional = false)
     @Size(min = 1, max = 10)
     @Column(name = "priority")
     private String priority;
+    
     @Size(max = 45)
     @Column(name = "product")
     private String product;
+    
     @Size(max = 45)
     @Column(name = "feature")
     private String feature;
+    
     @Basic(optional = false)
     @Size(min = 1, max = 45)
     @Column(name = "case_type")
     private String caseType;
+    
     @Column(name = "time_to_run")
     private Integer timeToRun;
+    
     @Size(max = 45)
     @Column(name = "slug")
     private String slug;
+    
     @JoinColumn(name = "folder_id", referencedColumnName = "id")
     @ManyToOne(optional = false)
     private EcTestfolder folderId;
+    
     @OneToMany(mappedBy = "testcaseId")
     private List<EcTestupload> ecTestuploadList;
+    
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcaseId")
     @OrderBy("stepNumber ASC")
     private SortedSet<EcTeststep> ecTeststepList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcaseId")
+    
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcaseId",fetch = FetchType.LAZY)
     private List<EcTestplanTestcaseMapping> ecTestplanTestcaseMappingList;
-    @OneToMany(mappedBy = "testcaseId")
+    
+    @OneToMany(mappedBy = "testcaseId",fetch = FetchType.LAZY)
     private List<EcTestcaseRequirementMapping> ecTestcaseRequirementMappingLst;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcaseId")
+    
+    @IndexedEmbedded
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcase",fetch = FetchType.LAZY)
     private List<EcTestcaseTagMapping> ecTestcaseTagMappingList;
     
     public EcTestcase() {
