@@ -1,8 +1,10 @@
 package com.deem.excord.repository;
 
-import com.deem.excord.domain.EcHistory;
 import java.util.List;
+
 import org.springframework.data.repository.CrudRepository;
+
+import com.deem.excord.domain.EcHistory;
 
 public interface HistoryRepository extends CrudRepository<EcHistory, Long> {
 

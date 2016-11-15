@@ -36,5 +36,23 @@ $(document).ready(function () {
         }
 
     });
-
+    
+    var tags = $("#ttags").val();
+    var tagsList = [];
+    if(tags !== "") {
+    	tagsList = tags.split(",");
+    }
+    
+	var ms = $('#ttags-div').magicSuggest({
+      value: tagsList
+	});
+	
+	$(ms).on('selectionchange', function(){
+  		$("#ttags").val(this.getValue().join(","));
+    });
+	
+    $.get("/tags").then(function(list){
+    	ms.setData(list);
+    });
+    
 }); 

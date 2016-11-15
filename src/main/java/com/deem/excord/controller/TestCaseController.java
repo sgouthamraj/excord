@@ -1,23 +1,5 @@
 package com.deem.excord.controller;
 
-import com.deem.excord.domain.EcTestcase;
-import com.deem.excord.domain.EcTestcaseRequirementMapping;
-import com.deem.excord.domain.EcTestfolder;
-import com.deem.excord.domain.EcTestplan;
-import com.deem.excord.domain.EcTestplanTestcaseMapping;
-import com.deem.excord.domain.EcTestresult;
-import com.deem.excord.domain.EcTeststep;
-import com.deem.excord.repository.TestCaseRepository;
-import com.deem.excord.repository.TestFolderRepository;
-import com.deem.excord.repository.TestPlanRepository;
-import com.deem.excord.repository.TestPlanTestCaseRepository;
-import com.deem.excord.repository.TestResultRepository;
-import com.deem.excord.repository.TestStepRepository;
-import com.deem.excord.repository.TestcaseRequirementRepository;
-import com.deem.excord.util.BizUtil;
-import com.deem.excord.util.Constants;
-import com.deem.excord.util.FlashMsgUtil;
-import com.deem.excord.util.HistoryUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -29,10 +11,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
@@ -48,6 +32,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
+
+import com.deem.excord.domain.EcTag;
+import com.deem.excord.domain.EcTestcase;
+import com.deem.excord.domain.EcTestcaseRequirementMapping;
+import com.deem.excord.domain.EcTestcaseTagMapping;
+import com.deem.excord.domain.EcTestfolder;
+import com.deem.excord.domain.EcTestplan;
+import com.deem.excord.domain.EcTestplanTestcaseMapping;
+import com.deem.excord.domain.EcTestresult;
+import com.deem.excord.domain.EcTeststep;
+import com.deem.excord.repository.TagRepository;
+import com.deem.excord.repository.TestCaseRepository;
+import com.deem.excord.repository.TestFolderRepository;
+import com.deem.excord.repository.TestPlanRepository;
+import com.deem.excord.repository.TestPlanTestCaseRepository;
+import com.deem.excord.repository.TestResultRepository;
+import com.deem.excord.repository.TestStepRepository;
+import com.deem.excord.repository.TestcaseRequirementRepository;
+import com.deem.excord.repository.TestcaseTagRepository;
+import com.deem.excord.util.BizUtil;
+import com.deem.excord.util.Constants;
+import com.deem.excord.util.FlashMsgUtil;
+import com.deem.excord.util.HistoryUtil;
 
 @Controller
 public class TestCaseController {
@@ -74,6 +81,12 @@ public class TestCaseController {
 
     @Autowired
     TestResultRepository trDao;
+    
+    @Autowired
+    TagRepository tagDao;
+    
+    @Autowired
+    TestcaseTagRepository tctagDao;
 
     @Autowired
     HistoryUtil historyUtil;
@@ -175,7 +188,8 @@ public class TestCaseController {
             @RequestParam(value = "tfeature", required = false) String tfeature,
             @RequestParam(value = "taversion", required = false) String taversion,
             @RequestParam(value = "tdversion", required = false) String tdversion,
-            @RequestParam(value = "ttrun", required = true) Integer timeToRun
+            @RequestParam(value = "ttrun", required = true) Integer timeToRun,
+            @RequestParam(value = "ttags", required = true) String ttags
     ) {
 
         EcTestfolder folder = tfDao.findOne(tfolderId);
@@ -185,12 +199,35 @@ public class TestCaseController {
             tcObj = tcDao.findOne(tid);
             //Delete all existing steps of testcase.
             tsDao.deleteTeststepByTestcaseId(tid);
+            // Delete all the existing tags of testcase
+            tctagDao.deleteByTestcaseId(tcObj);
             //Mark all test runs as not run.
             updateTestcaseAsNotRun(tcObj);
         } else {
             //New testcase
             tcObj = new EcTestcase();
             tcObj.setSlug(BizUtil.INSTANCE.getSlug());
+        }
+        
+        // Tags handling. Check whether the passed in tags are available in tags table,
+        // if not, add them to tags table and then create a mapping between them
+        
+        String[] tags = StringUtils.commaDelimitedListToStringArray(ttags);
+        
+        List<EcTestcaseTagMapping> tcTagsList = new ArrayList<>();
+        
+        for(String tag : tags) {
+        	tag = tag.toLowerCase();
+        	EcTag tagObj = tagDao.findByTag(tag);
+        	if(tagObj == null) {
+        		tagObj = new EcTag(tag);
+        		tagDao.save(tagObj);
+        		tagObj = tagDao.findByTag(tag);
+        	}
+        	EcTestcaseTagMapping tcTag = new EcTestcaseTagMapping();
+        	tcTag.setTagId(tagObj);
+        	tcTag.setTestcaseId(tcObj);
+        	tcTagsList.add(tcTag);
         }
 
         tcObj.setName(tname);
@@ -209,6 +246,7 @@ public class TestCaseController {
         tcObj.setAddedVersion(taversion);
         tcObj.setDeprecatedVersion(tdversion);
         tcObj.setTimeToRun(timeToRun);
+        tcObj.setEcTestcaseTagMappingList(tcTagsList);
         tcDao.save(tcObj);
 
         for (int i = 1; i <= tstepCount; i++) {
@@ -732,6 +770,7 @@ public class TestCaseController {
         model.addAttribute("tc", tc);
         model.addAttribute("reviewTc", reviewTc);
         model.addAttribute("tsLst", tsLst);
+        model.addAttribute("ttags", StringUtils.arrayToCommaDelimitedString(tc.getTestcaseTags().toArray()));
         return "testcase_form";
     }
 
@@ -741,6 +780,7 @@ public class TestCaseController {
         List<EcTeststep> tsLst = tsDao.findByTestcaseId(tc);
         model.addAttribute("tc", tc);
         model.addAttribute("tsLst", tsLst);
+        model.addAttribute("ttags", StringUtils.arrayToCommaDelimitedString(tc.getTestcaseTags().toArray()));
         return "testcase_step";
     }
 

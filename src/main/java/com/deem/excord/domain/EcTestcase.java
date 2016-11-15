@@ -1,8 +1,10 @@
 package com.deem.excord.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedSet;
+
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -97,7 +99,9 @@ public class EcTestcase implements Serializable {
     private List<EcTestplanTestcaseMapping> ecTestplanTestcaseMappingList;
     @OneToMany(mappedBy = "testcaseId")
     private List<EcTestcaseRequirementMapping> ecTestcaseRequirementMappingLst;
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "testcaseId")
+    private List<EcTestcaseTagMapping> ecTestcaseTagMappingList;
+    
     public EcTestcase() {
     }
 
@@ -313,5 +317,21 @@ public class EcTestcase implements Serializable {
     public void setEcTestcaseRequirementMappingLst(List<EcTestcaseRequirementMapping> ecTestcaseRequirementMappingLst) {
         this.ecTestcaseRequirementMappingLst = ecTestcaseRequirementMappingLst;
     }
+
+	public List<EcTestcaseTagMapping> getEcTestcaseTagMappingList() {
+		return ecTestcaseTagMappingList;
+	}
+
+	public void setEcTestcaseTagMappingList(List<EcTestcaseTagMapping> ecTestcaseTagMappingList) {
+		this.ecTestcaseTagMappingList = ecTestcaseTagMappingList;
+	}
+	
+	public List<String> getTestcaseTags() {
+		List<String> tags = new ArrayList<>();
+		for(EcTestcaseTagMapping map : getEcTestcaseTagMappingList()) {
+			tags.add(map.getTagId().getTag());
+		}
+		return tags;
+	}
 
 }
